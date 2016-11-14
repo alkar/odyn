@@ -1,0 +1,6 @@
+hash: cb6fc7f5f24324bb7d64d8348db923def911725983acd824bf5cadc308470188
+updated: 2016-10-26T16:07:46.633485737+01:00
+imports:
+- name: github.com/miekg/dns
+  version: 58f52c57ce9df13460ac68200cef30a008b9c468
+testImports: []
