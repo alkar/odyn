@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 	"net"
 )
 
@@ -23,5 +24,14 @@ var (
 type ipProviderOpenDNS struct{}
 
 func (p ipProviderOpenDNS) Get() (net.IP, error) {
-	return resolveARecord(openDNSTargetHostname, openDNSNameservers)
+	ips, err := resolveARecord(openDNSTargetHostname, openDNSNameservers)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ips) != 1 {
+		log.Printf("DNS answer contained multiple entries, will only use the first: %+v", ips)
+	}
+
+	return ips[0], err
 }
