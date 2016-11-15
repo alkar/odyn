@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -23,7 +24,7 @@ var (
 	}
 )
 
-type ipProviderIPInfo struct {
+type ipInfoResponse struct {
 	IP           net.IP `json:"ip"`
 	Hostname     string `json:"hostname"`
 	City         string `json:"city"`
@@ -33,13 +34,25 @@ type ipProviderIPInfo struct {
 	Organisation string `json:"org"`
 }
 
-func (p *ipProviderIPInfo) Get() (net.IP, error) {
+type ipProviderIPInfo struct {
+	client *http.Client
+	url    *url.URL
+}
+
+func newIPProviderIPInfo() (*ipProviderIPInfo, error) {
 	u, err := url.Parse(ipInfoBaseURL)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	return &ipProviderIPInfo{
+		client: &http.Client{},
+		url:    u,
+	}, nil
+}
+
+func (p *ipProviderIPInfo) Get() (net.IP, error) {
+	req, err := http.NewRequest(http.MethodGet, p.url.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +61,7 @@ func (p *ipProviderIPInfo) Get() (net.IP, error) {
 		req.Header.Set(k, v)
 	}
 
-	resp, err := (&http.Client{}).Do(req)
+	resp, err := p.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -58,15 +71,19 @@ func (p *ipProviderIPInfo) Get() (net.IP, error) {
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		io.Copy(ioutil.Discard, resp.Body)
+		resp.Body.Close()
+	}()
+
+	r := ipInfoResponse{}
+	err = json.Unmarshal(body, &r)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal(body, p)
-	if err != nil {
-		return nil, err
-	}
-
-	return p.IP, nil
+	return r.IP, nil
 }
