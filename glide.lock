@@ -1,6 +1,10 @@
-hash: cb6fc7f5f24324bb7d64d8348db923def911725983acd824bf5cadc308470188
-updated: 2016-10-26T16:07:46.633485737+01:00
+hash: 391bf2c48a14a70f96dfb26a4339ae19330dfbcd0304b23b3c1043443f91cfef
+updated: 2016-11-14T21:13:12.565691557Z
 imports:
+- name: github.com/aws/aws-sdk-go
+  version: b4c487bc7488f35e8deb5c5339804595369c8d02
+  subpackages:
+  - service/route53
 - name: github.com/miekg/dns
   version: 58f52c57ce9df13460ac68200cef30a008b9c468
 testImports: []
