@@ -21,10 +21,18 @@ var (
 	}
 )
 
-type ipProviderOpenDNS struct{}
+type ipProviderOpenDNS struct {
+	dnsClient *dnsClient
+}
+
+func newIPProviderOpenDNS() *ipProviderOpenDNS {
+	return &ipProviderOpenDNS{
+		dnsClient: newDNSClient(),
+	}
+}
 
 func (p ipProviderOpenDNS) Get() (net.IP, error) {
-	ips, err := resolveARecord(openDNSTargetHostname, openDNSNameservers)
+	ips, err := p.dnsClient.resolveARecord(openDNSTargetHostname, openDNSNameservers)
 	if err != nil {
 		return nil, err
 	}

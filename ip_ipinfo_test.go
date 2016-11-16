@@ -34,7 +34,7 @@ func TestIPProviderIPInfo_Get(t *testing.T) {
 	defer ts.Close()
 
 	// mock the ip provider
-	p, _ := newIPProviderIPInfo()
+	p := newIPProviderIPInfo()
 	u, _ := url.Parse(ts.URL)
 	p.url = u
 

@@ -39,16 +39,13 @@ type ipProviderIPInfo struct {
 	url    *url.URL
 }
 
-func newIPProviderIPInfo() (*ipProviderIPInfo, error) {
-	u, err := url.Parse(ipInfoBaseURL)
-	if err != nil {
-		return nil, err
-	}
+func newIPProviderIPInfo() *ipProviderIPInfo {
+	u, _ := url.Parse(ipInfoBaseURL)
 
 	return &ipProviderIPInfo{
 		client: &http.Client{},
 		url:    u,
-	}, nil
+	}
 }
 
 func (p *ipProviderIPInfo) Get() (net.IP, error) {

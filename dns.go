@@ -15,8 +15,15 @@ var (
 	errDNSEmptyAnswer = errors.New("DNS nameserver returned an empty answer")
 )
 
-func resolveARecord(name string, nameservers []string) ([]net.IP, error) {
-	c := dns.Client{}
+type dnsClient struct {
+	*dns.Client
+}
+
+func newDNSClient() *dnsClient {
+	return &dnsClient{&dns.Client{}}
+}
+
+func (c *dnsClient) resolveARecord(name string, nameservers []string) ([]net.IP, error) {
 	m := dns.Msg{}
 	m.SetQuestion(name, dns.TypeA)
 
