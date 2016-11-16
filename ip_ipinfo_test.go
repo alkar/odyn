@@ -64,3 +64,19 @@ func TestIPProviderIPInfo_Get(t *testing.T) {
 		}
 	}
 }
+
+func TestIPProviderIPInfo_Get_noConnectivity(t *testing.T) {
+	// mock the ip provider
+	p := newIPProviderIPInfo()
+	u, _ := url.Parse("https://127.0.0.1:64321")
+	p.url = u
+
+	_, err := p.Get()
+	if err == nil {
+		t.Fatalf("Expected error, got nil")
+	}
+
+	if err.Error() != "Get https://127.0.0.1:64321: dial tcp 127.0.0.1:64321: getsockopt: connection refused" {
+		t.Errorf("Expected different error, got: %+v", err)
+	}
+}

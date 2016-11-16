@@ -49,10 +49,7 @@ func newIPProviderIPInfo() *ipProviderIPInfo {
 }
 
 func (p *ipProviderIPInfo) Get() (net.IP, error) {
-	req, err := http.NewRequest(http.MethodGet, p.url.String(), nil)
-	if err != nil {
-		return nil, err
-	}
+	req, _ := http.NewRequest(http.MethodGet, p.url.String(), nil)
 
 	for k, v := range ipInfoHTTPClientHeaders {
 		req.Header.Set(k, v)
