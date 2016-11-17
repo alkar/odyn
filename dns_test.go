@@ -97,7 +97,7 @@ func startMockDNSServerFleet(t *testing.T, records map[string][]string) ([]*dns.
 	return servers, serverAddresses
 }
 
-func startMockBrokenDNSServerFleet(t *testing.T, records map[string][]string) ([]*dns.Server, []string) {
+func startMockSemiBrokenDNSServerFleet(t *testing.T, records map[string][]string) ([]*dns.Server, []string) {
 	servers := []*dns.Server{&dns.Server{}}
 	serverAddresses := []string{"127.0.0.1:65111"}
 
@@ -189,7 +189,7 @@ func Test_resolveARecord_multipleSame(t *testing.T) {
 }
 
 func Test_resolveARecord_broken(t *testing.T) {
-	servers, serverAddresses := startMockBrokenDNSServerFleet(t, map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
+	servers, serverAddresses := startMockSemiBrokenDNSServerFleet(t, map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
 	defer stopMockDNSServerFleet(servers)
 
 	dc := newDNSClient()
