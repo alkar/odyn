@@ -66,28 +66,28 @@ func startMockDNSServerFleet(t *testing.T, records map[string][]string) ([]*dns.
 	servers := []*dns.Server{}
 	serverAddresses := []string{}
 
-	s, addr, err := startMockDNSServer("127.0.0.1:65111", records)
+	s, addr, err := startMockDNSServer("127.0.0.1:0", records)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
 	servers = append(servers, s)
 	serverAddresses = append(serverAddresses, addr)
 
-	s, addr, err = startMockDNSServer("127.0.0.1:65112", records)
+	s, addr, err = startMockDNSServer("127.0.0.1:0", records)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
 	servers = append(servers, s)
 	serverAddresses = append(serverAddresses, addr)
 
-	s, addr, err = startMockDNSServer("127.0.0.1:65113", records)
+	s, addr, err = startMockDNSServer("127.0.0.1:0", records)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
 	servers = append(servers, s)
 	serverAddresses = append(serverAddresses, addr)
 
-	s, addr, err = startMockDNSServer("127.0.0.1:65114", records)
+	s, addr, err = startMockDNSServer("127.0.0.1:0", records)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
@@ -99,23 +99,23 @@ func startMockDNSServerFleet(t *testing.T, records map[string][]string) ([]*dns.
 
 func startMockSemiBrokenDNSServerFleet(t *testing.T, records map[string][]string) ([]*dns.Server, []string) {
 	servers := []*dns.Server{&dns.Server{}}
-	serverAddresses := []string{"127.0.0.1:65111"}
+	serverAddresses := []string{"127.0.0.1:10000"}
 
-	s, addr, err := startMockDNSServer("127.0.0.1:65112", nil)
+	s, addr, err := startMockDNSServer("127.0.0.1:0", nil)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
 	servers = append(servers, s)
 	serverAddresses = append(serverAddresses, addr)
 
-	s, addr, err = startMockDNSServer("127.0.0.1:65113", records)
+	s, addr, err = startMockDNSServer("127.0.0.1:0", records)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
 	servers = append(servers, s)
 	serverAddresses = append(serverAddresses, addr)
 
-	s, addr, err = startMockDNSServer("127.0.0.1:65114", records)
+	s, addr, err = startMockDNSServer("127.0.0.1:0", records)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
