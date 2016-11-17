@@ -12,7 +12,17 @@ var (
 	errCombinedDifferentResults = errors.New("The providers returned different results")
 )
 
-type ipProviderCombined struct{}
+type ipProviderCombined struct {
+	ipinfo  *ipProviderIPInfo
+	opendns *ipProviderOpenDNS
+}
+
+func newIPProviderCombined() *ipProviderCombined {
+	return &ipProviderCombined{
+		ipinfo:  newIPProviderIPInfo(),
+		opendns: newIPProviderOpenDNS(),
+	}
+}
 
 func (p ipProviderCombined) Get() (net.IP, error) {
 	var ipA, ipB net.IP
@@ -22,7 +32,7 @@ func (p ipProviderCombined) Get() (net.IP, error) {
 	wg.Add(2)
 
 	go func() {
-		ipA, errA = (&ipProviderIPInfo{}).Get()
+		ipA, errA = p.ipinfo.Get()
 		if errA != nil {
 			log.Printf("IPInfo provider return an error: %+v", errA)
 		}
@@ -30,7 +40,7 @@ func (p ipProviderCombined) Get() (net.IP, error) {
 	}()
 
 	go func() {
-		ipB, errB = ipProviderOpenDNS{}.Get()
+		ipB, errB = p.opendns.Get()
 		if errB != nil {
 			log.Printf("OpenDNS provider return an error: %+v", errB)
 		}
