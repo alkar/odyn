@@ -13,3 +13,36 @@
 // limitations under the License.
 
 package ip
+
+import (
+	"encoding/json"
+	"net"
+	"net/url"
+)
+
+var (
+	ipinfoURL, _ = url.Parse("https://ipinfo.io")
+
+	// IPInfoProvider uses ipinfo.io to discover the public IP address.
+	IPInfoProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
+		URL: ipinfoURL,
+		Parse: func(body []byte) (net.IP, error) {
+			response := struct {
+				IPAddress    net.IP `json:"ip"`
+				Hostname     string `json:"hostname"`
+				City         string `json:"city"`
+				Region       string `json:"region"`
+				Country      string `json:"country"`
+				Location     string `json:"loc"`
+				Organisation string `json:"org"`
+			}{}
+
+			if err := json.Unmarshal(body, &response); err != nil {
+				return nil, err
+			}
+
+			return response.IPAddress, nil
+		},
+	})
+)
+

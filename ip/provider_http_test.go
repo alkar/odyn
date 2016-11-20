@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	testCases = []struct {
+	testCasesHTTP = []struct {
 		resp string
 		code int
 		err  error
@@ -76,7 +76,7 @@ func TestHTTPProvider_Get(t *testing.T) {
 	}
 
 	// test all cases
-	for i, testCase := range testCases {
+	for i, testCase := range testCasesHTTP {
 		resp = testCase.resp
 		code = testCase.code
 
