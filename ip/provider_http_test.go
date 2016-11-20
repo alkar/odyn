@@ -83,12 +83,12 @@ func TestHTTPProvider_Get(t *testing.T) {
 		_, err := p.Get()
 
 		if testCase.err == nil && err != nil {
-			t.Errorf("Was expecting no error but got: %+v", err)
+			t.Errorf("HTTPProvider.Get returned unexpected error for case %02d: %+v", i, err)
 			continue
 		}
 
 		if err == nil && testCase.err != nil {
-			t.Error("Was expecting an error but got nil")
+			t.Errorf("HTTPProvider.Get did not return expected error for case %02d: %+v", i, err)
 			continue
 		}
 
@@ -97,7 +97,7 @@ func TestHTTPProvider_Get(t *testing.T) {
 		}
 
 		if err.Error() != testCase.err.Error() {
-			t.Errorf("Got unexpected error for case %02d: %+v", i, err)
+			t.Errorf("HTTPProvider.Get returned unexpected error for case %02d: %+v", i, err)
 		}
 	}
 }
@@ -112,11 +112,11 @@ func TestHTTPProvider_Get_noConnectivity(t *testing.T) {
 
 	_, err = p.Get()
 	if err == nil {
-		t.Fatalf("Expected error, got nil")
+		t.Errorf("HTTPProvider.Get did not return expected error")
 	}
 
 	if err.Error() != "Get https://127.0.0.1:64321: dial tcp 127.0.0.1:64321: getsockopt: connection refused" {
-		t.Errorf("Expected different error, got: %+v", err)
+		t.Errorf("HTTPProvider.Get did not returned unexpected error: %+v", err)
 	}
 }
 

@@ -25,7 +25,7 @@ func Test_resolveARecord_noServer(t *testing.T) {
 	dc := NewClient()
 	_, err := dc.ResolveARecord("example.com.", []string{"127.0.0.1:65111"})
 	if err == nil {
-		t.Fatalf("resolveARecord should have returned an error")
+		t.Fatalf("Client.ResolveARecord should have returned an error")
 	}
 }
 
@@ -33,13 +33,13 @@ func Test_resolveARecord_empty(t *testing.T) {
 	servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{"example.com.": []string{}})
 	defer dnstest.StopMockDNSServerFleet(servers)
 	if err != nil {
-		t.Fatalf("unable to run test server: %v", err)
+		t.Fatalf("dnstest: unable to run test server: %v", err)
 	}
 
 	dc := NewClient()
 	_, err = dc.ResolveARecord("example.com.", serverAddresses)
 	if err != ErrEmptyAnswer {
-		t.Fatalf("resolveARecord should have returned an empty answer error")
+		t.Fatalf("Client.ResolveARecord should have returned an empty answer error")
 	}
 }
 
@@ -47,21 +47,21 @@ func Test_resolveARecord_multipleDifferent(t *testing.T) {
 	servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.2.3.4"}})
 	defer dnstest.StopMockDNSServerFleet(servers)
 	if err != nil {
-		t.Fatalf("unable to run test server: %v", err)
+		t.Fatalf("dnstest: unable to run test server: %v", err)
 	}
 
 	dc := NewClient()
 	resp, err := dc.ResolveARecord("example.com.", serverAddresses)
 	if err != nil {
-		t.Fatalf("resolveARecord returned unexpected error: %+v", err)
+		t.Fatalf("Client.ResolveARecord returned unexpected error: %+v", err)
 	}
 
 	if len(resp) != 2 {
-		t.Fatalf("resolveARecord should have returned two values")
+		t.Fatalf("Client.ResolveARecord should have returned two values")
 	}
 
 	if !resp[0].Equal(net.ParseIP("1.1.1.1")) || !resp[1].Equal(net.ParseIP("1.2.3.4")) {
-		t.Fatalf("resolveARecord returned unexpected response")
+		t.Fatalf("Client.ResolveARecord returned unexpected response")
 	}
 }
 
@@ -69,21 +69,21 @@ func Test_resolveARecord_multipleSame(t *testing.T) {
 	servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
 	defer dnstest.StopMockDNSServerFleet(servers)
 	if err != nil {
-		t.Fatalf("unable to run test server: %v", err)
+		t.Fatalf("dnstest: unable to run test server: %v", err)
 	}
 
 	dc := NewClient()
 	resp, err := dc.ResolveARecord("example.com.", serverAddresses)
 	if err != nil {
-		t.Fatalf("resolveARecord returned unexpected error: %+v", err)
+		t.Fatalf("Client.ResolveARecord returned unexpected error: %+v", err)
 	}
 
 	if len(resp) != 1 {
-		t.Fatalf("resolveARecord should return a single value if the response contains the same value multiple times")
+		t.Fatalf("Client.ResolveARecord should return a single value if the response contains the same value multiple times")
 	}
 
 	if !resp[0].Equal(net.ParseIP("1.1.1.1")) {
-		t.Fatalf("resolveARecord returned unexpected response")
+		t.Fatalf("Client.ResolveARecord returned unexpected response")
 	}
 }
 
@@ -91,20 +91,20 @@ func Test_resolveARecord_broken(t *testing.T) {
 	servers, serverAddresses, err := dnstest.StartMockSemiBrokenDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
 	defer dnstest.StopMockDNSServerFleet(servers)
 	if err != nil {
-		t.Fatalf("unable to run test server: %v", err)
+		t.Fatalf("dnstest: unable to run test server: %v", err)
 	}
 
 	dc := NewClient()
 	resp, err := dc.ResolveARecord("example.com.", serverAddresses)
 	if err != nil {
-		t.Fatalf("resolveARecord returned unexpected error: %+v", err)
+		t.Fatalf("Client.ResolveARecord returned unexpected error: %+v", err)
 	}
 
 	if len(resp) != 1 {
-		t.Fatalf("resolveARecord should return a single value if the response contains the same value multiple times")
+		t.Fatalf("Client.ResolveARecord should return a single value if the response contains the same value multiple times")
 	}
 
 	if !resp[0].Equal(net.ParseIP("1.1.1.1")) {
-		t.Fatalf("resolveARecord returned unexpected response")
+		t.Fatalf("Client.ResolveARecord returned unexpected response")
 	}
 }
