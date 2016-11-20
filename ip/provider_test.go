@@ -28,10 +28,8 @@ func TestIPInfoProvider_Get(t *testing.T) {
 
 	// create a mock http server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if h, ok := r.Header["Header_key"]; ok && h[0] == "header_value" {
-			w.WriteHeader(code)
-			fmt.Fprintf(w, resp)
-		}
+		w.WriteHeader(code)
+		fmt.Fprintf(w, resp)
 	}))
 	defer ts.Close()
 
