@@ -86,8 +86,11 @@ type HTTPProvider struct {
 
 // HTTPProviderOptions are used to alter the behaviour of the JSON IP Provider.
 type HTTPProviderOptions struct {
+	// Function to send the HTTP request to the service and return the response
+	// body.
 	Request HTTPProviderRequester
 
+	// Function to parse the response body and return an IP address.
 	Parse HTTPProviderResponseParser
 
 	// HTTP Client used to send the GET request.
