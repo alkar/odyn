@@ -15,8 +15,9 @@
 package ip
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -29,28 +30,50 @@ var (
 		code int
 		err  error
 	}{
-		{`{"ip": "1.2.3.4", "hostname": "", "city": "", "region": "", "country": "", "loc": "", "org": ""}`, 200, nil},
-		{`{"ip": ".2.3.4", "hostname": "", "city": "", "region": "", "country": "", "loc": "", "org": ""}`, 200, errors.New("invalid IP address: .2.3.4")},
-		{``, 500, errIPInfoInvalidResponseCode},
-		{``, 200, errors.New("unexpected end of JSON input")},
+		{`1.2.3.4`, 200, nil},
+		{`.2.3.4`, 200, ErrHTTPProviderCouldNotParseIP},
+		{``, 500, ErrHTTPProviderInvalidResponseCode},
+		{``, 200, ErrHTTPProviderCouldNotParseIP},
+	}
+
+	testHTTPProviderParser = func(body []byte) (net.IP, error) {
+		response := struct {
+			IPAddress net.IP `json:"ip"`
+		}{}
+
+		if err := json.Unmarshal(body, &response); err != nil {
+			return nil, err
+		}
+
+		return response.IPAddress, nil
 	}
 )
 
-func TestIPProviderIPInfo_Get(t *testing.T) {
+func TestHTTPProvider_Get(t *testing.T) {
 	var resp string
 	var code int
 
 	// create a mock http server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(code)
-		fmt.Fprintf(w, resp)
+		if h, ok := r.Header["Header_key"]; ok && h[0] == "header_value" {
+			w.WriteHeader(code)
+			fmt.Fprintf(w, resp)
+		}
 	}))
 	defer ts.Close()
 
 	// mock the ip provider
-	p := newIPProviderIPInfo()
 	u, _ := url.Parse(ts.URL)
-	p.url = u
+	p, err := NewHTTPProviderWithOptions(&HTTPProviderOptions{
+		URL: u,
+		// Parse: testHTTPProviderParser,
+		Headers: map[string]string{
+			"Header_key": "header_value",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewHTTPProviderWithOptions returned unexpected error: %+v", err)
+	}
 
 	// test all cases
 	for i, testCase := range testCases {
@@ -79,18 +102,27 @@ func TestIPProviderIPInfo_Get(t *testing.T) {
 	}
 }
 
-func TestIPProviderIPInfo_Get_noConnectivity(t *testing.T) {
+func TestHTTPProvider_Get_noConnectivity(t *testing.T) {
 	// mock the ip provider
-	p := newIPProviderIPInfo()
 	u, _ := url.Parse("https://127.0.0.1:64321")
-	p.url = u
+	p, err := NewHTTPProvider(u)
+	if err != nil {
+		t.Fatalf("NewHTTPProviderWithOptions returned unexpected error: %+v", err)
+	}
 
-	_, err := p.Get()
+	_, err = p.Get()
 	if err == nil {
 		t.Fatalf("Expected error, got nil")
 	}
 
 	if err.Error() != "Get https://127.0.0.1:64321: dial tcp 127.0.0.1:64321: getsockopt: connection refused" {
 		t.Errorf("Expected different error, got: %+v", err)
+	}
+}
+
+func TestNewHTTPProvider_error(t *testing.T) {
+	_, err := NewHTTPProvider(nil)
+	if err != ErrHTTPProviderURLIsRequired {
+		t.Errorf("NewHTTPProvider did not return an error as expected")
 	}
 }
