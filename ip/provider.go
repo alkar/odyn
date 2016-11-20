@@ -20,9 +20,13 @@ import (
 	"net/url"
 )
 
+// Provider is an interface for IP providers to implement.
+type Provider interface {
+	Get() (net.IP, error)
+}
+
 var (
 	ipinfoURL, _ = url.Parse("https://ipinfo.io")
-
 	// IPInfoProvider uses ipinfo.io to discover the public IP address.
 	IPInfoProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
 		URL: ipinfoURL,
@@ -43,6 +47,26 @@ var (
 
 			return response.IPAddress, nil
 		},
+		Headers: map[string]string{
+			"Accept": "application/json",
+		},
+	})
+
+	ipifyURL, _ = url.Parse("https://api.ipify.org")
+	// IpifyProvider uses ipify.org to discover the public IP address.
+	IpifyProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
+		URL: ipifyURL,
+		Headers: map[string]string{
+			"Accept": "plain/text",
+		},
+	})
+
+	// OpenDNSProvider uses OpenDNS's nameservers to discover the public IP
+	// address.
+	OpenDNSProvider, _ = NewDNSProvider("myip.opendns.com.", []string{
+		"208.67.222.222:53", // resolver1.opendns.com
+		"208.67.220.220:53", // resolver2.opendns.com
+		"208.67.222.220:53", // resolver3.opendns.com
+		"208.67.220.222:53", // resolver4.opendns.com
 	})
 )
-
