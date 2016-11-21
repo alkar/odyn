@@ -20,7 +20,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 )
 
@@ -63,9 +62,8 @@ func TestHTTPProvider_Get(t *testing.T) {
 	defer ts.Close()
 
 	// mock the ip provider
-	u, _ := url.Parse(ts.URL)
 	p, err := NewHTTPProviderWithOptions(&HTTPProviderOptions{
-		URL: u,
+		URL: ts.URL,
 		// Parse: testHTTPProviderParser,
 		Headers: map[string]string{
 			"Header_key": "header_value",
@@ -104,8 +102,7 @@ func TestHTTPProvider_Get(t *testing.T) {
 
 func TestHTTPProvider_Get_noConnectivity(t *testing.T) {
 	// mock the ip provider
-	u, _ := url.Parse("https://127.0.0.1:64321")
-	p, err := NewHTTPProvider(u)
+	p, err := NewHTTPProvider("https://127.0.0.1:64321")
 	if err != nil {
 		t.Fatalf("NewHTTPProviderWithOptions returned unexpected error: %+v", err)
 	}
@@ -121,8 +118,14 @@ func TestHTTPProvider_Get_noConnectivity(t *testing.T) {
 }
 
 func TestNewHTTPProvider_error(t *testing.T) {
-	_, err := NewHTTPProvider(nil)
-	if err != ErrHTTPProviderURLIsRequired {
-		t.Errorf("NewHTTPProvider did not return an error as expected")
+	if _, err := NewHTTPProvider(""); err != ErrHTTPProviderURLIsRequired {
+		t.Errorf("NewHTTPProvider returned unexpected error: %+v", err)
+	}
+}
+
+//
+func TestNewHTTPProvider_invalidURL(t *testing.T) {
+	if _, err := NewHTTPProvider(":"); err == nil {
+		t.Errorf("NewHTTPProvider did not return an error")
 	}
 }

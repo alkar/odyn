@@ -17,7 +17,6 @@ package ip
 import (
 	"encoding/json"
 	"net"
-	"net/url"
 )
 
 // Provider is an interface for IP providers to implement.
@@ -26,13 +25,12 @@ type Provider interface {
 }
 
 var (
-	ipinfoURL, _ = url.Parse("https://ipinfo.io")
 	// IPInfoProvider uses ipinfo.io to discover the public IP address.
 	IPInfoProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
-		URL: ipinfoURL,
+		URL: "https://ipinfo.io",
 		Parse: func(body []byte) (net.IP, error) {
 			response := struct {
-				IPAddress    net.IP `json:"ip"`
+				IP           net.IP `json:"ip"`
 				Hostname     string `json:"hostname"`
 				City         string `json:"city"`
 				Region       string `json:"region"`
@@ -45,17 +43,16 @@ var (
 				return nil, err
 			}
 
-			return response.IPAddress, nil
+			return response.IP, nil
 		},
 		Headers: map[string]string{
 			"Accept": "application/json",
 		},
 	})
 
-	ipifyURL, _ = url.Parse("https://api.ipify.org")
 	// IpifyProvider uses ipify.org to discover the public IP address.
 	IpifyProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
-		URL: ipifyURL,
+		URL: "https://api.ipify.org",
 		Headers: map[string]string{
 			"Accept": "plain/text",
 		},

@@ -39,7 +39,7 @@ var (
 	defaultHTTPProviderClient = &http.Client{}
 
 	defaultHTTPProviderRequester = func(options *HTTPProviderOptions) ([]byte, error) {
-		req, err := http.NewRequest(http.MethodGet, options.URL.String(), nil)
+		req, err := http.NewRequest(http.MethodGet, options.URL, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -100,7 +100,7 @@ type HTTPProviderOptions struct {
 	Headers map[string]string
 
 	// URL endpoint of the service.
-	URL *url.URL
+	URL string
 }
 
 // HTTPProviderRequester is tasked with sending an HTTP request to the service
@@ -113,15 +113,19 @@ type HTTPProviderResponseParser func(body []byte) (net.IP, error)
 
 // NewHTTPProvider returns a basic HTTPProvider that can parse plaintext
 // responses from a URL.
-func NewHTTPProvider(u *url.URL) (*HTTPProvider, error) {
+func NewHTTPProvider(u string) (*HTTPProvider, error) {
 	return NewHTTPProviderWithOptions(&HTTPProviderOptions{URL: u})
 }
 
 // NewHTTPProviderWithOptions allows you to specify the HTTPProviderOptions
 // and completely customise the behaviour.
 func NewHTTPProviderWithOptions(options *HTTPProviderOptions) (*HTTPProvider, error) {
-	if options.URL == nil {
+	if options.URL == "" {
 		return nil, ErrHTTPProviderURLIsRequired
+	}
+
+	if _, err := url.Parse(options.URL); err != nil {
+		return nil, err
 	}
 
 	if options.Client == nil {

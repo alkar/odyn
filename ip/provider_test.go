@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 )
 
@@ -34,9 +33,8 @@ func TestIPInfoProvider_Get(t *testing.T) {
 	defer ts.Close()
 
 	// mock the ip provider
-	u, _ := url.Parse(ts.URL)
 	originalURL := IPInfoProvider.options.URL
-	IPInfoProvider.options.URL = u
+	IPInfoProvider.options.URL = ts.URL
 	defer func() {
 		IPInfoProvider.options.URL = originalURL
 	}()
