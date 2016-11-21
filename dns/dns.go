@@ -21,7 +21,12 @@
 //  c := NewClient()
 //  ip, err := c.ResolveARecord("test.example.com", []string{"8.8.8.8"})
 //
+// DNS Providers
 //
+// DNS providers are tasked with updating A records:
+//
+//  p, err := NewRoute53Provider()
+//  err := p.Update("test.example.com", "example.com.", net.ParseIP("1.2.3.4"))
 package dns
 
 import (
