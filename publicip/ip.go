@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package ip provides functionality to discover one's public IP address
+// Package publicip provides functionality to discover one's public IP address
 // using a variety of services (providers).
 //
 // Providers
@@ -33,4 +33,4 @@
 //  ip, err := ps.Get()
 //
 // See the documentation on NewProviderSet for more information.
-package ip
+package publicip
