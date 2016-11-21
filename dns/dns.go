@@ -26,7 +26,7 @@
 // DNS providers are tasked with updating A records:
 //
 //  p, err := NewRoute53Provider()
-//  err := p.Update("test.example.com", "example.com.", net.ParseIP("1.2.3.4"))
+//  err := p.UpdateA("test.example.com", "example.com.", net.ParseIP("1.2.3.4"))
 package dns
 
 import (

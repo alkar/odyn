@@ -143,7 +143,7 @@ var (
 	}
 )
 
-func TestRoute53Provider_Update(t *testing.T) {
+func TestRoute53Provider_UpdateA(t *testing.T) {
 	testCases := []struct {
 		listZonesErr      error
 		listZonesResponse *route53.ListHostedZonesByNameOutput
@@ -279,9 +279,9 @@ func TestRoute53Provider_Update(t *testing.T) {
 			WatchTimeout:  time.Second,
 		})
 
-		err := p.Update(tc.recordName, tc.zoneName, tc.ip)
+		err := p.UpdateA(tc.recordName, tc.zoneName, tc.ip)
 		if err != tc.expectedErr {
-			t.Errorf("Route53Provider.Update returned unexpected error: %+v", err)
+			t.Errorf("Route53Provider.UpdateA returned unexpected error: %+v", err)
 		}
 	}
 }

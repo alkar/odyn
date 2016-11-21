@@ -87,9 +87,9 @@ func NewRoute53ProviderWithOptions(options *Route53ProviderOptions) (*Route53Pro
 	return &Route53Provider{options: options}, nil
 }
 
-// Update will set the Route53 A Record in the specified zone to point to the
+// UpdateA will set the Route53 A Record in the specified zone to point to the
 // provided IP address.
-func (p *Route53Provider) Update(recordName string, zoneName string, ip net.IP) error {
+func (p *Route53Provider) UpdateA(recordName string, zoneName string, ip net.IP) error {
 	zone, err := p.getZone(zoneName)
 	if err != nil {
 		return err
