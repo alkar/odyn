@@ -21,7 +21,7 @@ import (
 	"github.com/alkar/odyn/dnstest"
 )
 
-func Test_resolveARecord_noServer(t *testing.T) {
+func TestClient_ResolveARecord_noServer(t *testing.T) {
 	dc := NewClient()
 	_, err := dc.ResolveARecord("example.com.", []string{"127.0.0.1:65111"})
 	if err == nil {
@@ -29,7 +29,7 @@ func Test_resolveARecord_noServer(t *testing.T) {
 	}
 }
 
-func Test_resolveARecord_empty(t *testing.T) {
+func TestClient_ResolveARecord_empty(t *testing.T) {
 	servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{"example.com.": []string{}})
 	defer dnstest.StopMockDNSServerFleet(servers)
 	if err != nil {
@@ -43,7 +43,7 @@ func Test_resolveARecord_empty(t *testing.T) {
 	}
 }
 
-func Test_resolveARecord_multipleDifferent(t *testing.T) {
+func TestClient_ResolveARecord_multipleDifferent(t *testing.T) {
 	servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.2.3.4"}})
 	defer dnstest.StopMockDNSServerFleet(servers)
 	if err != nil {
@@ -65,7 +65,7 @@ func Test_resolveARecord_multipleDifferent(t *testing.T) {
 	}
 }
 
-func Test_resolveARecord_multipleSame(t *testing.T) {
+func TestClient_ResolveARecord_multipleSame(t *testing.T) {
 	servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
 	defer dnstest.StopMockDNSServerFleet(servers)
 	if err != nil {
@@ -87,7 +87,7 @@ func Test_resolveARecord_multipleSame(t *testing.T) {
 	}
 }
 
-func Test_resolveARecord_broken(t *testing.T) {
+func TestClient_ResolveARecord_broken(t *testing.T) {
 	servers, serverAddresses, err := dnstest.StartMockSemiBrokenDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
 	defer dnstest.StopMockDNSServerFleet(servers)
 	if err != nil {
