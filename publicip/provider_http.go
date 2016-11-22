@@ -38,6 +38,10 @@ var (
 
 	defaultHTTPProviderClient = &http.Client{}
 
+	defaultHTTPProviderHeaders = map[string]string{
+		"Accept": "plain/text",
+	}
+
 	defaultHTTPProviderRequester = func(options *HTTPProviderOptions) ([]byte, error) {
 		req, err := http.NewRequest(http.MethodGet, options.URL, nil)
 		if err != nil {
@@ -130,6 +134,10 @@ func NewHTTPProviderWithOptions(options *HTTPProviderOptions) (*HTTPProvider, er
 
 	if options.Client == nil {
 		options.Client = defaultHTTPProviderClient
+	}
+
+	if options.Headers == nil {
+		options.Headers = defaultHTTPProviderHeaders
 	}
 
 	if options.Parse == nil {

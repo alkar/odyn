@@ -25,6 +25,9 @@ type Provider interface {
 }
 
 var (
+	// IpifyProvider uses ipify.org to discover the public IP address.
+	IpifyProvider, _ = NewHTTPProvider("https://api.ipify.org")
+
 	// IPInfoProvider uses ipinfo.io to discover the public IP address.
 	IPInfoProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
 		URL: "https://ipinfo.io",
@@ -47,14 +50,6 @@ var (
 		},
 		Headers: map[string]string{
 			"Accept": "application/json",
-		},
-	})
-
-	// IpifyProvider uses ipify.org to discover the public IP address.
-	IpifyProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
-		URL: "https://api.ipify.org",
-		Headers: map[string]string{
-			"Accept": "plain/text",
 		},
 	})
 
