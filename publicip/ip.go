@@ -17,19 +17,19 @@
 //
 // Providers
 //
-// The services currently available to use through this package are ipify.org,
-// ipinfo.io and opendns.com
+// They are used to retrieve the public IP address from some web service.
 //
-// The easiest approach is to simply:
+// For example, to retrieve it over HTTP:
+//  p, err := publicip.NewHTTPProvider("http://myip.example.com")
 //  ip, err := IpifyProvider.Get()
 //
-// You can also use the HTTPProvider and DNSProvider to extend the
-// functionality to further services.
+// The HTTPProvider and DNSProvider can be used to retrieve the public IP
+// address from many different services since they're highly customisable.
 //
 // ProviderSet
 //
 // You can also combine multiple providers:
-//  ps, err := NewProviderSet(ProviderSetParallel, IpifyProvider, OpenDNSProvider)
+//  ps, err := NewProviderSet(ProviderSetParallel, myHTTPProvider, myDNSProvider)
 //  ip, err := ps.Get()
 //
 // See the documentation on NewProviderSet for more information.

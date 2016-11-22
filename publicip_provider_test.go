@@ -1,4 +1,4 @@
-package publicip
+package odyn
 
 import (
 	"errors"
@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/alkar/odyn/publicip"
 )
 
 var (
@@ -16,7 +18,7 @@ var (
 	}{
 		{`{"ip": "1.2.3.4", "hostname": "", "city": "", "region": "", "country": "", "loc": "", "org": ""}`, 200, nil},
 		{`{"ip": ".2.3.4", "hostname": "", "city": "", "region": "", "country": "", "loc": "", "org": ""}`, 200, errors.New("invalid IP address: .2.3.4")},
-		{``, 500, ErrHTTPProviderInvalidResponseCode},
+		{``, 500, publicip.ErrHTTPProviderInvalidResponseCode},
 		{``, 200, errors.New("unexpected end of JSON input")},
 	}
 )
@@ -33,26 +35,28 @@ func TestIPInfoProvider_Get(t *testing.T) {
 	defer ts.Close()
 
 	// mock the ip provider
-	originalURL := IPInfoProvider.options.URL
-	IPInfoProvider.options.URL = ts.URL
-	defer func() {
-		IPInfoProvider.options.URL = originalURL
-	}()
+	p, _ := publicip.NewHTTPProviderWithOptions(&publicip.HTTPProviderOptions{
+		URL:   ts.URL,
+		Parse: ipInfoParser,
+		Headers: map[string]string{
+			"Accept": "application/json",
+		},
+	})
 
 	// test all cases
 	for i, testCase := range testCasesIPInfo {
 		resp = testCase.resp
 		code = testCase.code
 
-		_, err := IPInfoProvider.Get()
+		_, err := p.Get()
 
 		if testCase.err == nil && err != nil {
-			t.Errorf("Was expecting no error but got: %+v", err)
+			t.Errorf("IPInfo.Get() returned unexpected error: %+v", err)
 			continue
 		}
 
 		if err == nil && testCase.err != nil {
-			t.Error("Was expecting an error but got nil")
+			t.Error("IPInfo.Get() did not return an error as expected")
 			continue
 		}
 
@@ -61,7 +65,7 @@ func TestIPInfoProvider_Get(t *testing.T) {
 		}
 
 		if err.Error() != testCase.err.Error() {
-			t.Errorf("Got unexpected error for case %02d: %+v", i, err)
+			t.Errorf("IPInfo.Get() returned unexpected error for case %02d: %+v", i, err)
 		}
 	}
 }

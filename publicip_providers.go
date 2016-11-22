@@ -1,0 +1,48 @@
+package odyn
+
+import (
+	"encoding/json"
+	"net"
+
+	"github.com/alkar/odyn/publicip"
+)
+
+var (
+	// IpifyProvider uses ipify.org to discover the public IP address.
+	IpifyProvider, _ = publicip.NewHTTPProvider("https://api.ipify.org")
+
+	// IPInfoProvider uses ipinfo.io to discover the public IP address.
+	IPInfoProvider, _ = publicip.NewHTTPProviderWithOptions(&publicip.HTTPProviderOptions{
+		URL:   "https://ipinfo.io",
+		Parse: ipInfoParser,
+		Headers: map[string]string{
+			"Accept": "application/json",
+		},
+	})
+	ipInfoParser = func(body []byte) (net.IP, error) {
+		response := struct {
+			IP           net.IP `json:"ip"`
+			Hostname     string `json:"hostname"`
+			City         string `json:"city"`
+			Region       string `json:"region"`
+			Country      string `json:"country"`
+			Location     string `json:"loc"`
+			Organisation string `json:"org"`
+		}{}
+
+		if err := json.Unmarshal(body, &response); err != nil {
+			return nil, err
+		}
+
+		return response.IP, nil
+	}
+
+	// OpenDNSProvider uses OpenDNS's nameservers to discover the public IP
+	// address.
+	OpenDNSProvider, _ = publicip.NewDNSProvider("myip.opendns.com.", []string{
+		"208.67.222.222:53", // resolver1.opendns.com
+		"208.67.220.220:53", // resolver2.opendns.com
+		"208.67.222.220:53", // resolver3.opendns.com
+		"208.67.220.222:53", // resolver4.opendns.com
+	})
+)
