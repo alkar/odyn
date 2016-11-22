@@ -27,4 +27,5 @@ type Zone struct {
 // Provider is an interface for DNS providers to implement.
 type Provider interface {
 	UpdateA(recordName string, zoneName string, ip net.IP) error
+	Nameservers(zoneName string) ([]string, error)
 }

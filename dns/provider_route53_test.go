@@ -264,12 +264,10 @@ func TestRoute53Provider_UpdateA(t *testing.T) {
 	for _, tc := range testCases {
 		p, _ := NewRoute53ProviderWithOptions(&Route53ProviderOptions{
 			API: &mockRoute53API{
-				getZoneResp: tc.getZoneResponse,
-				getZoneErr:  tc.getZoneErr,
-
+				getZoneResp:   tc.getZoneResponse,
+				getZoneErr:    tc.getZoneErr,
 				getChangeResp: tc.getChangeResponse,
 				getChangeErr:  tc.getChangeErr,
-
 				listZonesResp: tc.listZonesResponse,
 				listZonesErr:  tc.listZonesErr,
 				changeRRResp:  tc.changeRRResponse,
@@ -282,6 +280,54 @@ func TestRoute53Provider_UpdateA(t *testing.T) {
 		err := p.UpdateA(tc.recordName, tc.zoneName, tc.ip)
 		if err != tc.expectedErr {
 			t.Errorf("Route53Provider.UpdateA returned unexpected error: %+v", err)
+		}
+	}
+}
+
+func TestRoute53Provider_Nameservers(t *testing.T) {
+	testCases := []struct {
+		listZonesErr      error
+		listZonesResponse *route53.ListHostedZonesByNameOutput
+		getZoneErr        error
+		getZoneResponse   *route53.GetHostedZoneOutput
+
+		zoneName string
+
+		expectedErr error
+	}{
+		{ // error in get zone
+			errTestRoute53ProviderMock,
+			nil,
+			nil,
+			nil,
+			"example.com.",
+			errTestRoute53ProviderMock,
+		},
+		{ // works end to end
+			nil,
+			testRoute53ProviderListZonesOK,
+			nil,
+			testRoute53ProviderGetZoneOK,
+			"example.com.",
+			nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		p, _ := NewRoute53ProviderWithOptions(&Route53ProviderOptions{
+			API: &mockRoute53API{
+				getZoneResp:   tc.getZoneResponse,
+				getZoneErr:    tc.getZoneErr,
+				listZonesResp: tc.listZonesResponse,
+				listZonesErr:  tc.listZonesErr,
+			},
+			WatchInterval: 100 * time.Millisecond,
+			WatchTimeout:  time.Second,
+		})
+
+		_, err := p.Nameservers(tc.zoneName)
+		if err != tc.expectedErr {
+			t.Errorf("Route53Provider.Nameservers returned unexpected error: %+v", err)
 		}
 	}
 }

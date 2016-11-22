@@ -98,6 +98,16 @@ func (p *Route53Provider) UpdateA(recordName string, zoneName string, ip net.IP)
 	return p.updateRecord(recordName, zone.ID, ip)
 }
 
+// Nameservers returns the list of authoritative namservers for a DNS zone.
+func (p *Route53Provider) Nameservers(zoneName string) ([]string, error) {
+	zone, err := p.getZone(zoneName)
+	if err != nil {
+		return nil, err
+	}
+
+	return zone.Nameservers, nil
+}
+
 func (p *Route53Provider) updateRecord(recordName string, zoneID string, ip net.IP) error {
 	resp, err := p.options.API.ChangeResourceRecordSets(&route53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &route53.ChangeBatch{
