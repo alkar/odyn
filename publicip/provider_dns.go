@@ -51,7 +51,7 @@ func NewDNSProvider(record string, nameservers []string) (*DNSProvider, error) {
 
 // Get performs a DNS query and returns the IP address in the answer.
 func (p DNSProvider) Get() (net.IP, error) {
-	ips, err := p.dns.ResolveARecord(p.record, p.nameservers)
+	ips, err := p.dns.ResolveA(p.record, p.nameservers)
 	if err != nil {
 		return nil, err
 	}

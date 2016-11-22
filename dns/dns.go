@@ -19,7 +19,7 @@
 // To request for an A record from a set of nameservers:
 //
 //  c := NewClient()
-//  ip, err := c.ResolveARecord("test.example.com", []string{"8.8.8.8"})
+//  ip, err := c.ResolveA("test.example.com", []string{"8.8.8.8"})
 //
 // DNS Providers
 //
@@ -52,9 +52,9 @@ func NewClient() *Client {
 	return &Client{&dns.Client{}}
 }
 
-// ResolveARecord will ask the provided nameservers for an A record of the
-// provided DNS name and return the list of IP addresses in the answer, if any.
-func (c *Client) ResolveARecord(name string, nameservers []string) ([]net.IP, error) {
+// ResolveA will ask the provided nameservers for an A record of the provided
+// DNS name and return the list of IP addresses in the answer, if any.
+func (c *Client) ResolveA(name string, nameservers []string) ([]net.IP, error) {
 	m := dns.Msg{}
 	m.SetQuestion(name, dns.TypeA)
 
