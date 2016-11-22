@@ -16,14 +16,6 @@ package dns
 
 import "net"
 
-// Zone represents and DNS zone with a name, optional ID and the list of
-// its authoritative DNS nameservers.
-type Zone struct {
-	Name        string
-	ID          string
-	Nameservers []string
-}
-
 // Provider is an interface for DNS providers to implement.
 type Provider interface {
 	UpdateA(recordName string, zoneName string, ip net.IP) error

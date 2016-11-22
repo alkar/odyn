@@ -39,6 +39,12 @@ var (
 	defaultRoute53ProviderWatchTimeout        = 2 * time.Minute
 )
 
+type route53Zone struct {
+	Name        string
+	ID          string
+	Nameservers []string
+}
+
 // Route53Provider is a DNS provider based on the Amazon Web Services Route53
 // DNS service.
 type Route53Provider struct {
@@ -161,7 +167,7 @@ func (p *Route53Provider) waitForChange(changeID string) error {
 	}
 }
 
-func (p *Route53Provider) getZone(name string) (*Zone, error) {
+func (p *Route53Provider) getZone(name string) (*route53Zone, error) {
 	zones, err := p.options.API.ListHostedZonesByName(&route53.ListHostedZonesByNameInput{
 		DNSName:  aws.String(name),
 		MaxItems: aws.String("1"),
@@ -181,7 +187,7 @@ func (p *Route53Provider) getZone(name string) (*Zone, error) {
 		return nil, err
 	}
 
-	ret := &Zone{
+	ret := &route53Zone{
 		ID:          *zone.HostedZone.Id,
 		Nameservers: make([]string, len(zone.DelegationSet.NameServers)),
 	}
