@@ -30,5 +30,5 @@
 package odyn
 
 const (
-	version = "master"
+	Version = "master"
 )

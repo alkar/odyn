@@ -13,7 +13,7 @@ var (
 	IpifyProvider, _ = publicip.NewHTTPProviderWithOptions(&publicip.HTTPProviderOptions{
 		URL: "https://api.ipify.org",
 		Headers: map[string]string{
-			"User-Agent": fmt.Sprintf("odyn/%s", version),
+			"User-Agent": fmt.Sprintf("odyn/%s", Version),
 		},
 	})
 
@@ -23,7 +23,7 @@ var (
 		Parse: ipInfoParser,
 		Headers: map[string]string{
 			"Accept":     "application/json",
-			"User-Agent": fmt.Sprintf("odyn/%s", version),
+			"User-Agent": fmt.Sprintf("odyn/%s", Version),
 		},
 	})
 	ipInfoParser = func(body []byte) (net.IP, error) {
