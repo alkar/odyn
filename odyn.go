@@ -28,3 +28,7 @@
 //
 // You can combine them using ProviderSets.
 package odyn
+
+const (
+	version = "master"
+)

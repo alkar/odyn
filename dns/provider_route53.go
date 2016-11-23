@@ -128,7 +128,7 @@ func (p *Route53Provider) updateRecord(recordName string, zoneID string, ip net.
 					},
 				},
 			},
-			Comment: aws.String("Updated by odyn"),
+			Comment: aws.String("Managed by odyn"),
 		},
 		HostedZoneId: aws.String(zoneID),
 	})

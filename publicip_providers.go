@@ -2,6 +2,7 @@ package odyn
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 
 	"github.com/alkar/odyn/publicip"
@@ -9,14 +10,20 @@ import (
 
 var (
 	// IpifyProvider uses ipify.org to discover the public IP address.
-	IpifyProvider, _ = publicip.NewHTTPProvider("https://api.ipify.org")
+	IpifyProvider, _ = publicip.NewHTTPProviderWithOptions(&publicip.HTTPProviderOptions{
+		URL: "https://api.ipify.org",
+		Headers: map[string]string{
+			"User-Agent": fmt.Sprintf("odyn/%s", version),
+		},
+	})
 
 	// IPInfoProvider uses ipinfo.io to discover the public IP address.
 	IPInfoProvider, _ = publicip.NewHTTPProviderWithOptions(&publicip.HTTPProviderOptions{
 		URL:   "https://ipinfo.io",
 		Parse: ipInfoParser,
 		Headers: map[string]string{
-			"Accept": "application/json",
+			"Accept":     "application/json",
+			"User-Agent": fmt.Sprintf("odyn/%s", version),
 		},
 	})
 	ipInfoParser = func(body []byte) (net.IP, error) {
