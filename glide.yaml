@@ -5,3 +5,5 @@ import:
   version: v1.5.3
   subpackages:
   - service/route53
+- package: github.com/jawher/mow.cli
+- package: github.com/alkar/simplelog

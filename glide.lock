@@ -1,10 +1,43 @@
-hash: 391bf2c48a14a70f96dfb26a4339ae19330dfbcd0304b23b3c1043443f91cfef
-updated: 2016-11-14T21:13:12.565691557Z
+hash: 3a3959c676a359a6a44a77ad3d320ec58a8abc8b073eeb82d22847bc683b2322
+updated: 2016-11-18T23:25:13.369546163Z
 imports:
+- name: github.com/alkar/simplelog
+  version: 08bb63a10825c36f9ce3deb74923cc77fbfb687a
 - name: github.com/aws/aws-sdk-go
   version: b4c487bc7488f35e8deb5c5339804595369c8d02
   subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - private/endpoints
+  - private/protocol
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/restxml
+  - private/protocol/xml/xmlutil
+  - private/waiter
   - service/route53
+  - service/route53/route53iface
+  - service/sts
+- name: github.com/go-ini/ini
+  version: 6e4869b434bd001f6983749881c7ead3545887d8
+- name: github.com/jawher/mow.cli
+  version: 660b9261e2c80bb92e5a0eaa581596084656140e
+- name: github.com/jmespath/go-jmespath
+  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/miekg/dns
   version: 58f52c57ce9df13460ac68200cef30a008b9c468
 testImports: []
