@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dns
+package odyn
 
 import (
 	"errors"
@@ -53,26 +53,26 @@ func (m mockRoute53API) GetChange(in *route53.GetChangeInput) (*route53.GetChang
 	return m.getChangeResp, m.getChangeErr
 }
 
-func TestRoute53Provider_defaults(t *testing.T) {
-	p, _ := NewRoute53Provider()
+func TestRoute53_defaults(t *testing.T) {
+	p, _ := NewRoute53Zone()
 
-	if p.options.TTL != defaultRoute53ProviderTTL {
-		t.Errorf("NewRoute53Provider default TTL is not what was expected: %+v", p.options.TTL)
+	if p.options.TTL != defaultRoute53ZoneRecordTTL {
+		t.Errorf("NewRoute53 default TTL is not what was expected: %+v", p.options.TTL)
 	}
 
-	if p.options.WatchInterval != defaultRoute53ProviderWatchInterval {
-		t.Errorf("NewRoute53Provider default WatchInterval is not what was expected: %+v", p.options.WatchInterval)
+	if p.options.WatchInterval != defaultRoute53ZoneWatchInterval {
+		t.Errorf("NewRoute53 default WatchInterval is not what was expected: %+v", p.options.WatchInterval)
 	}
 
-	if p.options.WatchTimeout != defaultRoute53ProviderWatchTimeout {
-		t.Errorf("NewRoute53Provider default WatchTimeout is not what was expected: %+v", p.options.WatchTimeout)
+	if p.options.WatchTimeout != defaultRoute53ZoneWatchTimeout {
+		t.Errorf("NewRoute53 default WatchTimeout is not what was expected: %+v", p.options.WatchTimeout)
 	}
 }
 
 var (
-	errTestRoute53ProviderMock = errors.New("test error")
+	errTestRoute53Mock = errors.New("test error")
 
-	testRoute53ProviderListZonesOK = &route53.ListHostedZonesByNameOutput{
+	testRoute53ListZonesOK = &route53.ListHostedZonesByNameOutput{
 		DNSName: aws.String("example.com."),
 		HostedZones: []*route53.HostedZone{
 			&route53.HostedZone{
@@ -92,7 +92,7 @@ var (
 		IsTruncated:      aws.Bool(false),
 	}
 
-	testRoute53ProviderGetZoneOK = &route53.GetHostedZoneOutput{
+	testRoute53GetZoneOK = &route53.GetHostedZoneOutput{
 		HostedZone: &route53.HostedZone{
 			ResourceRecordSetCount: aws.Int64(1),
 			CallerReference:        aws.String(""),
@@ -115,7 +115,7 @@ var (
 		},
 	}
 
-	testRoute53ProviderChangeRROK = &route53.ChangeResourceRecordSetsOutput{
+	testRoute53ChangeRROK = &route53.ChangeResourceRecordSetsOutput{
 		ChangeInfo: &route53.ChangeInfo{
 			Comment:     aws.String(""),
 			Id:          aws.String("123456789"),
@@ -124,7 +124,7 @@ var (
 		},
 	}
 
-	testRoute53ProviderGetChangeOK = &route53.GetChangeOutput{
+	testRoute53GetChangeOK = &route53.GetChangeOutput{
 		ChangeInfo: &route53.ChangeInfo{
 			Comment:     aws.String(""),
 			Id:          aws.String("123456789"),
@@ -133,7 +133,7 @@ var (
 		},
 	}
 
-	testRoute53ProviderGetChangePending = &route53.GetChangeOutput{
+	testRoute53GetChangePending = &route53.GetChangeOutput{
 		ChangeInfo: &route53.ChangeInfo{
 			Comment:     aws.String(""),
 			Id:          aws.String("123456789"),
@@ -143,7 +143,7 @@ var (
 	}
 )
 
-func TestRoute53Provider_UpdateA(t *testing.T) {
+func TestRoute53_UpdateA(t *testing.T) {
 	testCases := []struct {
 		listZonesErr      error
 		listZonesResponse *route53.ListHostedZonesByNameOutput
@@ -162,7 +162,7 @@ func TestRoute53Provider_UpdateA(t *testing.T) {
 		expectedErr error
 	}{
 		{ // error in list zones
-			errTestRoute53ProviderMock,
+			errTestRoute53Mock,
 			nil,
 			nil,
 			nil,
@@ -173,11 +173,11 @@ func TestRoute53Provider_UpdateA(t *testing.T) {
 			"test.example.com",
 			"example.com.",
 			net.ParseIP("1.1.1.1"),
-			errTestRoute53ProviderMock,
+			errTestRoute53Mock,
 		},
 		{ // zone not found
 			nil,
-			testRoute53ProviderListZonesOK,
+			testRoute53ListZonesOK,
 			nil,
 			nil,
 			nil,
@@ -187,12 +187,12 @@ func TestRoute53Provider_UpdateA(t *testing.T) {
 			"",
 			"test.example.com",
 			net.ParseIP("1.1.1.1"),
-			ErrRoute53ProviderNoHostedZoneFound,
+			ErrRoute53NoHostedZoneFound,
 		},
 		{ // error in get zone
 			nil,
-			testRoute53ProviderListZonesOK,
-			errTestRoute53ProviderMock,
+			testRoute53ListZonesOK,
+			errTestRoute53Mock,
 			nil,
 			nil,
 			nil,
@@ -201,59 +201,59 @@ func TestRoute53Provider_UpdateA(t *testing.T) {
 			"test.example.com",
 			"example.com.",
 			net.ParseIP("1.1.1.1"),
-			errTestRoute53ProviderMock,
+			errTestRoute53Mock,
 		},
 		{ // error in change request
 			nil,
-			testRoute53ProviderListZonesOK,
+			testRoute53ListZonesOK,
 			nil,
-			testRoute53ProviderGetZoneOK,
-			errTestRoute53ProviderMock,
+			testRoute53GetZoneOK,
+			errTestRoute53Mock,
 			nil,
 			nil,
 			nil,
 			"test.example.com",
 			"example.com.",
 			net.ParseIP("1.1.1.1"),
-			errTestRoute53ProviderMock,
+			errTestRoute53Mock,
 		},
 		{ // error in get change request
 			nil,
-			testRoute53ProviderListZonesOK,
+			testRoute53ListZonesOK,
 			nil,
-			testRoute53ProviderGetZoneOK,
+			testRoute53GetZoneOK,
 			nil,
-			testRoute53ProviderChangeRROK,
-			errTestRoute53ProviderMock,
+			testRoute53ChangeRROK,
+			errTestRoute53Mock,
 			nil,
 			"test.example.com",
 			"example.com.",
 			net.ParseIP("1.1.1.1"),
-			errTestRoute53ProviderMock,
+			errTestRoute53Mock,
 		},
 		{ // timeout in get change
 			nil,
-			testRoute53ProviderListZonesOK,
+			testRoute53ListZonesOK,
 			nil,
-			testRoute53ProviderGetZoneOK,
+			testRoute53GetZoneOK,
 			nil,
-			testRoute53ProviderChangeRROK,
+			testRoute53ChangeRROK,
 			nil,
-			testRoute53ProviderGetChangePending,
+			testRoute53GetChangePending,
 			"test.example.com",
 			"example.com.",
 			net.ParseIP("1.1.1.1"),
-			ErrRoute53ProviderWatchTimedOut,
+			ErrRoute53WatchTimedOut,
 		},
 		{ // works end to end
 			nil,
-			testRoute53ProviderListZonesOK,
+			testRoute53ListZonesOK,
 			nil,
-			testRoute53ProviderGetZoneOK,
+			testRoute53GetZoneOK,
 			nil,
-			testRoute53ProviderChangeRROK,
+			testRoute53ChangeRROK,
 			nil,
-			testRoute53ProviderGetChangeOK,
+			testRoute53GetChangeOK,
 			"test.example.com",
 			"example.com.",
 			net.ParseIP("1.1.1.1"),
@@ -262,7 +262,7 @@ func TestRoute53Provider_UpdateA(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		p, _ := NewRoute53ProviderWithOptions(&Route53ProviderOptions{
+		p, _ := NewRoute53ZoneWithOptions(&Route53ZoneOptions{
 			API: &mockRoute53API{
 				getZoneResp:   tc.getZoneResponse,
 				getZoneErr:    tc.getZoneErr,
@@ -279,12 +279,12 @@ func TestRoute53Provider_UpdateA(t *testing.T) {
 
 		err := p.UpdateA(tc.recordName, tc.zoneName, tc.ip)
 		if err != tc.expectedErr {
-			t.Errorf("Route53Provider.UpdateA returned unexpected error: %+v", err)
+			t.Errorf("Route53.UpdateA returned unexpected error: %+v", err)
 		}
 	}
 }
 
-func TestRoute53Provider_Nameservers(t *testing.T) {
+func TestRoute53_Nameservers(t *testing.T) {
 	testCases := []struct {
 		listZonesErr      error
 		listZonesResponse *route53.ListHostedZonesByNameOutput
@@ -296,25 +296,25 @@ func TestRoute53Provider_Nameservers(t *testing.T) {
 		expectedErr error
 	}{
 		{ // error in get zone
-			errTestRoute53ProviderMock,
+			errTestRoute53Mock,
 			nil,
 			nil,
 			nil,
 			"example.com.",
-			errTestRoute53ProviderMock,
+			errTestRoute53Mock,
 		},
 		{ // works end to end
 			nil,
-			testRoute53ProviderListZonesOK,
+			testRoute53ListZonesOK,
 			nil,
-			testRoute53ProviderGetZoneOK,
+			testRoute53GetZoneOK,
 			"example.com.",
 			nil,
 		},
 	}
 
 	for _, tc := range testCases {
-		p, _ := NewRoute53ProviderWithOptions(&Route53ProviderOptions{
+		p, _ := NewRoute53ZoneWithOptions(&Route53ZoneOptions{
 			API: &mockRoute53API{
 				getZoneResp:   tc.getZoneResponse,
 				getZoneErr:    tc.getZoneErr,
@@ -327,7 +327,7 @@ func TestRoute53Provider_Nameservers(t *testing.T) {
 
 		_, err := p.Nameservers(tc.zoneName)
 		if err != tc.expectedErr {
-			t.Errorf("Route53Provider.Nameservers returned unexpected error: %+v", err)
+			t.Errorf("Route53.Nameservers returned unexpected error: %+v", err)
 		}
 	}
 }

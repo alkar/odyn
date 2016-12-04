@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dns
+package odyn
 
 import (
 	"errors"
@@ -26,33 +26,30 @@ import (
 )
 
 var (
-	// ErrRoute53ProviderNoHostedZoneFound is returned when the Route53Provider
+	// ErrRoute53NoHostedZoneFound is returned when the Route53 DNS Zone provider
 	// fails to find the Route53 Hosted Zone.
-	ErrRoute53ProviderNoHostedZoneFound = errors.New("could not find a Route53 hosted zone")
+	ErrRoute53NoHostedZoneFound = errors.New("could not find a Route53 hosted zone")
 
-	// ErrRoute53ProviderWatchTimedOut is returned when the update method times
+	// ErrRoute53WatchTimedOut is returned when the update method times
 	// out waiting to confirm that the change has been applied.
-	ErrRoute53ProviderWatchTimedOut = errors.New("timed out")
+	ErrRoute53WatchTimedOut = errors.New("timed out")
 
-	defaultRoute53ProviderTTL           int64 = 60
-	defaultRoute53ProviderWatchInterval       = 10 * time.Second
-	defaultRoute53ProviderWatchTimeout        = 2 * time.Minute
+	defaultRoute53ZoneRecordTTL     int64 = 60
+	defaultRoute53ZoneWatchInterval       = 10 * time.Second
+	defaultRoute53ZoneWatchTimeout        = 2 * time.Minute
 )
 
-type route53Zone struct {
-	Name        string
-	ID          string
-	Nameservers []string
+// Route53Zone is a DNS Zone provider based on the Amazon Web Services Route53 DNS
+// service.
+type Route53Zone struct {
+	id          string
+	name        string
+	nameservers []string
+	options     *Route53ZoneOptions
 }
 
-// Route53Provider is a DNS provider based on the Amazon Web Services Route53
-// DNS service.
-type Route53Provider struct {
-	options *Route53ProviderOptions
-}
-
-// Route53ProviderOptions are used to alter the behaviour of the Route53Provider.
-type Route53ProviderOptions struct {
+// Route53ZoneOptions are used to alter the behaviour of the Route53 DNS zone provider.
+type Route53ZoneOptions struct {
 	TTL            int64
 	SessionOptions session.Options
 	API            route53iface.Route53API
@@ -60,25 +57,25 @@ type Route53ProviderOptions struct {
 	WatchTimeout   time.Duration
 }
 
-// NewRoute53Provider returns a new instantiated Route53Provider with default
-// options.
-func NewRoute53Provider() (*Route53Provider, error) {
-	return NewRoute53ProviderWithOptions(&Route53ProviderOptions{})
+// NewRoute53Zone returns a new instantiated Route53 DNS zone provider with
+// default options.
+func NewRoute53Zone() (*Route53Zone, error) {
+	return NewRoute53ZoneWithOptions(&Route53ZoneOptions{})
 }
 
-// NewRoute53ProviderWithOptions returns a new instantiated Route53Provider
-// using the provided options.
-func NewRoute53ProviderWithOptions(options *Route53ProviderOptions) (*Route53Provider, error) {
+// NewRoute53ZoneWithOptions returns a new instantiated Route53 DNS zone
+// provider using the specified options.
+func NewRoute53ZoneWithOptions(options *Route53ZoneOptions) (*Route53Zone, error) {
 	if options.TTL == 0 {
-		options.TTL = defaultRoute53ProviderTTL
+		options.TTL = defaultRoute53ZoneRecordTTL
 	}
 
 	if options.WatchInterval == 0 {
-		options.WatchInterval = defaultRoute53ProviderWatchInterval
+		options.WatchInterval = defaultRoute53ZoneWatchInterval
 	}
 
 	if options.WatchTimeout == 0 {
-		options.WatchTimeout = defaultRoute53ProviderWatchTimeout
+		options.WatchTimeout = defaultRoute53ZoneWatchTimeout
 	}
 
 	if options.API == nil {
@@ -90,31 +87,29 @@ func NewRoute53ProviderWithOptions(options *Route53ProviderOptions) (*Route53Pro
 		options.API = route53.New(sess)
 	}
 
-	return &Route53Provider{options: options}, nil
+	return &Route53Zone{options: options}, nil
 }
 
 // UpdateA will set the Route53 A Record in the specified zone to point to the
 // provided IP address.
-func (p *Route53Provider) UpdateA(recordName string, zoneName string, ip net.IP) error {
-	zone, err := p.getZone(zoneName)
-	if err != nil {
+func (p *Route53Zone) UpdateA(recordName string, zoneName string, ip net.IP) error {
+	if err := p.updateZone(zoneName); err != nil {
 		return err
 	}
 
-	return p.updateRecord(recordName, zone.ID, ip)
+	return p.updateRecord(recordName, p.id, ip)
 }
 
 // Nameservers returns the list of authoritative namservers for a DNS zone.
-func (p *Route53Provider) Nameservers(zoneName string) ([]string, error) {
-	zone, err := p.getZone(zoneName)
-	if err != nil {
+func (p *Route53Zone) Nameservers(zoneName string) ([]string, error) {
+	if err := p.updateZone(zoneName); err != nil {
 		return nil, err
 	}
 
-	return zone.Nameservers, nil
+	return p.nameservers, nil
 }
 
-func (p *Route53Provider) updateRecord(recordName string, zoneID string, ip net.IP) error {
+func (p *Route53Zone) updateRecord(recordName string, zoneID string, ip net.IP) error {
 	resp, err := p.options.API.ChangeResourceRecordSets(&route53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &route53.ChangeBatch{
 			Changes: []*route53.Change{
@@ -139,7 +134,7 @@ func (p *Route53Provider) updateRecord(recordName string, zoneID string, ip net.
 	return p.waitForChange(*resp.ChangeInfo.Id)
 }
 
-func (p *Route53Provider) waitForChange(changeID string) error {
+func (p *Route53Zone) waitForChange(changeID string) error {
 	timeout := time.NewTimer(p.options.WatchTimeout)
 	tick := time.NewTicker(p.options.WatchInterval)
 	defer func() {
@@ -162,38 +157,37 @@ func (p *Route53Provider) waitForChange(changeID string) error {
 				return nil
 			}
 		case <-timeout.C:
-			return ErrRoute53ProviderWatchTimedOut
+			return ErrRoute53WatchTimedOut
 		}
 	}
 }
 
-func (p *Route53Provider) getZone(name string) (*route53Zone, error) {
+func (p *Route53Zone) updateZone(name string) error {
 	zones, err := p.options.API.ListHostedZonesByName(&route53.ListHostedZonesByNameInput{
 		DNSName:  aws.String(name),
 		MaxItems: aws.String("1"),
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if len(zones.HostedZones) == 0 || *zones.HostedZones[0].Name != name {
-		return nil, ErrRoute53ProviderNoHostedZoneFound
+		return ErrRoute53NoHostedZoneFound
 	}
 
 	zone, err := p.options.API.GetHostedZone(&route53.GetHostedZoneInput{
 		Id: zones.HostedZones[0].Id,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	ret := &route53Zone{
-		ID:          *zone.HostedZone.Id,
-		Nameservers: make([]string, len(zone.DelegationSet.NameServers)),
-	}
+	p.id = *zone.HostedZone.Id
+	p.name = *zone.HostedZone.Name
+	p.nameservers = make([]string, len(zone.DelegationSet.NameServers))
 	for i, ns := range zone.DelegationSet.NameServers {
-		ret.Nameservers[i] = *ns
+		p.nameservers[i] = *ns
 	}
 
-	return ret, nil
+	return nil
 }

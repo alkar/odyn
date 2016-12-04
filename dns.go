@@ -12,22 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package dns provides DNS-related functionality.
-//
-// DNS Client
-//
-// To request for an A record from a set of nameservers:
-//
-//  c := NewClient()
-//  ip, err := c.ResolveA("test.example.com", []string{"8.8.8.8"})
-//
-// DNS Providers
-//
-// DNS providers are tasked with updating A records:
-//
-//  p, err := NewRoute53Provider()
-//  err := p.UpdateA("test.example.com", "example.com.", net.ParseIP("1.2.3.4"))
-package dns
+package odyn
 
 import (
 	"errors"
@@ -37,24 +22,24 @@ import (
 )
 
 var (
-	// ErrEmptyAnswer is returned when the DNS client receives an empty
+	// ErrDNSEmptyAnswer is returned when the DNS client receives an empty
 	// response from the nameservers.
-	ErrEmptyAnswer = errors.New("DNS nameserver returned an empty answer")
+	ErrDNSEmptyAnswer = errors.New("DNS nameserver returned an empty answer")
 )
 
-// Client provides easy to use DNS resolving methods.
-type Client struct {
+// DNSClient provides easy to use DNS resolving methods.
+type DNSClient struct {
 	*dns.Client
 }
 
-// NewClient instantiates a new DNS client.
-func NewClient() *Client {
-	return &Client{&dns.Client{}}
+// NewDNSClient instantiates a new DNS client.
+func NewDNSClient() *DNSClient {
+	return &DNSClient{&dns.Client{}}
 }
 
 // ResolveA will ask the provided nameservers for an A record of the provided
 // DNS name and return the list of IP addresses in the answer, if any.
-func (c *Client) ResolveA(name string, nameservers []string) ([]net.IP, error) {
+func (c *DNSClient) ResolveA(name string, nameservers []string) ([]net.IP, error) {
 	m := dns.Msg{}
 	m.SetQuestion(name, dns.TypeA)
 
@@ -69,7 +54,7 @@ func (c *Client) ResolveA(name string, nameservers []string) ([]net.IP, error) {
 		}
 
 		if len(r.Answer) == 0 {
-			retError = ErrEmptyAnswer
+			retError = ErrDNSEmptyAnswer
 			continue
 		}
 
@@ -94,4 +79,10 @@ func (c *Client) ResolveA(name string, nameservers []string) ([]net.IP, error) {
 	}
 
 	return retIP, retError
+}
+
+// DNSZone is an interface for DNS Zone providers to implement.
+type DNSZone interface {
+	UpdateA(recordName string, zoneName string, ip net.IP) error
+	Nameservers(zoneName string) ([]string, error)
 }

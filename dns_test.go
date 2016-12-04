@@ -12,25 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package dnstest provides some helpful functions to setup mock DNS
-// nameservers for testing.
-//
-//  servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{
-//    "test.example.com": []string{
-//      "1.1.1.1",
-//      "2.2.2.2",
-//    },
-//  })
-//  defer dnstest.StopMockDNSServerFleet(servers)
-//  if err != nil {
-//    t.Fatalf("could not setup mock servers: %+v", err)
-//  }
-//
-package dnstest
+package odyn
 
 import (
 	"net"
 	"sync"
+	"testing"
 	"time"
 
 	"github.com/miekg/dns"
@@ -89,9 +76,7 @@ func startMockDNSServer(laddr string, records map[string][]string) (*dns.Server,
 	return server, pc.LocalAddr().String(), nil
 }
 
-// StartMockDNSServerFleet starts four DNS nameservers that will respond based
-// on the provided map of records and IP addresses.
-func StartMockDNSServerFleet(records map[string][]string) ([]*dns.Server, []string, error) {
+func startMockDNSServerFleet(records map[string][]string) ([]*dns.Server, []string, error) {
 	servers := []*dns.Server{}
 	serverAddresses := []string{}
 
@@ -126,10 +111,7 @@ func StartMockDNSServerFleet(records map[string][]string) ([]*dns.Server, []stri
 	return servers, serverAddresses, nil
 }
 
-// StartMockSemiBrokenDNSServerFleet starts four DNS nameservers that will
-// respond based on the provided map of records and IP addresses, however, the
-// first nameserver is never started and is considered "broken".
-func StartMockSemiBrokenDNSServerFleet(records map[string][]string) ([]*dns.Server, []string, error) {
+func startMockSemiBrokenDNSServerFleet(records map[string][]string) ([]*dns.Server, []string, error) {
 	servers := []*dns.Server{&dns.Server{}}
 	serverAddresses := []string{"127.0.0.1:10000"}
 
@@ -157,9 +139,96 @@ func StartMockSemiBrokenDNSServerFleet(records map[string][]string) ([]*dns.Serv
 	return servers, serverAddresses, nil
 }
 
-// StopMockDNSServerFleet calls Shutdown() and a list of dns.Servers.
-func StopMockDNSServerFleet(servers []*dns.Server) {
+func stopMockDNSServerFleet(servers []*dns.Server) {
 	for _, s := range servers {
 		s.Shutdown()
+	}
+}
+
+func TestClient_ResolveA_noServer(t *testing.T) {
+	dc := NewDNSClient()
+	_, err := dc.ResolveA("example.com.", []string{"127.0.0.1:65111"})
+	if err == nil {
+		t.Fatalf("Client.ResolveA should have returned an error")
+	}
+}
+
+func TestClient_ResolveA_empty(t *testing.T) {
+	servers, serverAddresses, err := startMockDNSServerFleet(map[string][]string{"example.com.": []string{}})
+	defer stopMockDNSServerFleet(servers)
+	if err != nil {
+		t.Fatalf("dnstest: unable to run test server: %v", err)
+	}
+
+	dc := NewDNSClient()
+	_, err = dc.ResolveA("example.com.", serverAddresses)
+	if err != ErrDNSEmptyAnswer {
+		t.Fatalf("Client.ResolveA should have returned an empty answer error")
+	}
+}
+
+func TestClient_ResolveA_multipleDifferent(t *testing.T) {
+	servers, serverAddresses, err := startMockDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.2.3.4"}})
+	defer stopMockDNSServerFleet(servers)
+	if err != nil {
+		t.Fatalf("dnstest: unable to run test server: %v", err)
+	}
+
+	dc := NewDNSClient()
+	resp, err := dc.ResolveA("example.com.", serverAddresses)
+	if err != nil {
+		t.Fatalf("Client.ResolveA returned unexpected error: %+v", err)
+	}
+
+	if len(resp) != 2 {
+		t.Fatalf("Client.ResolveA should have returned two values")
+	}
+
+	if !resp[0].Equal(net.ParseIP("1.1.1.1")) || !resp[1].Equal(net.ParseIP("1.2.3.4")) {
+		t.Fatalf("Client.ResolveA returned unexpected response")
+	}
+}
+
+func TestClient_ResolveA_multipleSame(t *testing.T) {
+	servers, serverAddresses, err := startMockDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
+	defer stopMockDNSServerFleet(servers)
+	if err != nil {
+		t.Fatalf("dnstest: unable to run test server: %v", err)
+	}
+
+	dc := NewDNSClient()
+	resp, err := dc.ResolveA("example.com.", serverAddresses)
+	if err != nil {
+		t.Fatalf("Client.ResolveA returned unexpected error: %+v", err)
+	}
+
+	if len(resp) != 1 {
+		t.Fatalf("Client.ResolveA should return a single value if the response contains the same value multiple times")
+	}
+
+	if !resp[0].Equal(net.ParseIP("1.1.1.1")) {
+		t.Fatalf("Client.ResolveA returned unexpected response")
+	}
+}
+
+func TestClient_ResolveA_broken(t *testing.T) {
+	servers, serverAddresses, err := startMockSemiBrokenDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
+	defer stopMockDNSServerFleet(servers)
+	if err != nil {
+		t.Fatalf("dnstest: unable to run test server: %v", err)
+	}
+
+	dc := NewDNSClient()
+	resp, err := dc.ResolveA("example.com.", serverAddresses)
+	if err != nil {
+		t.Fatalf("Client.ResolveA returned unexpected error: %+v", err)
+	}
+
+	if len(resp) != 1 {
+		t.Fatalf("Client.ResolveA should return a single value if the response contains the same value multiple times")
+	}
+
+	if !resp[0].Equal(net.ParseIP("1.1.1.1")) {
+		t.Fatalf("Client.ResolveA returned unexpected response")
 	}
 }
