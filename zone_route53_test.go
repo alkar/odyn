@@ -53,7 +53,7 @@ func (m mockRoute53API) GetChange(in *route53.GetChangeInput) (*route53.GetChang
 	return m.getChangeResp, m.getChangeErr
 }
 
-func TestRoute53_defaults(t *testing.T) {
+func TestRoute53Zone_defaults(t *testing.T) {
 	p, _ := NewRoute53Zone()
 
 	if p.options.TTL != defaultRoute53ZoneRecordTTL {
@@ -143,7 +143,7 @@ var (
 	}
 )
 
-func TestRoute53_UpdateA(t *testing.T) {
+func TestRoute53Zone_UpdateA(t *testing.T) {
 	testCases := []struct {
 		listZonesErr      error
 		listZonesResponse *route53.ListHostedZonesByNameOutput
@@ -284,7 +284,7 @@ func TestRoute53_UpdateA(t *testing.T) {
 	}
 }
 
-func TestRoute53_Nameservers(t *testing.T) {
+func TestRoute53Zone_Nameservers(t *testing.T) {
 	testCases := []struct {
 		listZonesErr      error
 		listZonesResponse *route53.ListHostedZonesByNameOutput

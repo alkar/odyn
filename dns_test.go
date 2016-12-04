@@ -145,7 +145,7 @@ func stopMockDNSServerFleet(servers []*dns.Server) {
 	}
 }
 
-func TestClient_ResolveA_noServer(t *testing.T) {
+func TestDNSClient_ResolveA_noServer(t *testing.T) {
 	dc := NewDNSClient()
 	_, err := dc.ResolveA("example.com.", []string{"127.0.0.1:65111"})
 	if err == nil {
@@ -153,7 +153,7 @@ func TestClient_ResolveA_noServer(t *testing.T) {
 	}
 }
 
-func TestClient_ResolveA_empty(t *testing.T) {
+func TestDNSClient_ResolveA_empty(t *testing.T) {
 	servers, serverAddresses, err := startMockDNSServerFleet(map[string][]string{"example.com.": []string{}})
 	defer stopMockDNSServerFleet(servers)
 	if err != nil {
@@ -167,7 +167,7 @@ func TestClient_ResolveA_empty(t *testing.T) {
 	}
 }
 
-func TestClient_ResolveA_multipleDifferent(t *testing.T) {
+func TestDNSClient_ResolveA_multipleDifferent(t *testing.T) {
 	servers, serverAddresses, err := startMockDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.2.3.4"}})
 	defer stopMockDNSServerFleet(servers)
 	if err != nil {
@@ -189,7 +189,7 @@ func TestClient_ResolveA_multipleDifferent(t *testing.T) {
 	}
 }
 
-func TestClient_ResolveA_multipleSame(t *testing.T) {
+func TestDNSClient_ResolveA_multipleSame(t *testing.T) {
 	servers, serverAddresses, err := startMockDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
 	defer stopMockDNSServerFleet(servers)
 	if err != nil {
@@ -211,7 +211,7 @@ func TestClient_ResolveA_multipleSame(t *testing.T) {
 	}
 }
 
-func TestClient_ResolveA_broken(t *testing.T) {
+func TestDNSClient_ResolveA_broken(t *testing.T) {
 	servers, serverAddresses, err := startMockSemiBrokenDNSServerFleet(map[string][]string{"example.com.": []string{"1.1.1.1", "1.1.1.1"}})
 	defer stopMockDNSServerFleet(servers)
 	if err != nil {
