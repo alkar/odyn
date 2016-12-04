@@ -80,9 +80,3 @@ func (c *DNSClient) ResolveA(name string, nameservers []string) ([]net.IP, error
 
 	return retIP, retError
 }
-
-// DNSZone is an interface for DNS Zone providers to implement.
-type DNSZone interface {
-	UpdateA(recordName string, zoneName string, ip net.IP) error
-	Nameservers(zoneName string) ([]string, error)
-}

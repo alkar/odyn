@@ -110,3 +110,14 @@ var (
 		"208.67.220.222:53", // resolver4.opendns.com
 	})
 )
+
+// IPProvider is an interface for IP providers to implement.
+type IPProvider interface {
+	Get() (net.IP, error)
+}
+
+// DNSZone is an interface for DNS Zone providers to implement.
+type DNSZone interface {
+	UpdateA(recordName string, zoneName string, ip net.IP) error
+	Nameservers(zoneName string) ([]string, error)
+}
