@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/alkar/odyn/publicip"
 )
 
 var (
@@ -18,7 +16,7 @@ var (
 	}{
 		{`{"ip": "1.2.3.4", "hostname": "", "city": "", "region": "", "country": "", "loc": "", "org": ""}`, 200, nil},
 		{`{"ip": ".2.3.4", "hostname": "", "city": "", "region": "", "country": "", "loc": "", "org": ""}`, 200, errors.New("invalid IP address: .2.3.4")},
-		{``, 500, publicip.ErrHTTPProviderInvalidResponseCode},
+		{``, 500, ErrHTTPProviderInvalidResponseCode},
 		{``, 200, errors.New("unexpected end of JSON input")},
 	}
 )
@@ -35,7 +33,7 @@ func TestIPInfoProvider_Get(t *testing.T) {
 	defer ts.Close()
 
 	// mock the ip provider
-	p, _ := publicip.NewHTTPProviderWithOptions(&publicip.HTTPProviderOptions{
+	p, _ := NewHTTPProviderWithOptions(&HTTPProviderOptions{
 		URL:   ts.URL,
 		Parse: ipInfoParser,
 		Headers: map[string]string{

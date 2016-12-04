@@ -12,18 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package publicip
+package odyn
 
 import (
 	"net"
 	"testing"
-
-	"github.com/alkar/odyn/dnstest"
 )
 
 func TestDNSProvider_Get(t *testing.T) {
-	servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{"myip.opendns.com.": []string{"1.1.1.1"}})
-	defer dnstest.StopMockDNSServerFleet(servers)
+	servers, serverAddresses, err := startMockDNSServerFleet(map[string][]string{"myip.opendns.com.": []string{"1.1.1.1"}})
+	defer stopMockDNSServerFleet(servers)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
@@ -41,8 +39,8 @@ func TestDNSProvider_Get(t *testing.T) {
 }
 
 func TestDNSProvider_Get_broken(t *testing.T) {
-	servers, serverAddresses, err := dnstest.StartMockSemiBrokenDNSServerFleet(map[string][]string{"myip.opendns.com.": []string{"1.1.1.1"}})
-	defer dnstest.StopMockDNSServerFleet(servers)
+	servers, serverAddresses, err := startMockSemiBrokenDNSServerFleet(map[string][]string{"myip.opendns.com.": []string{"1.1.1.1"}})
+	defer stopMockDNSServerFleet(servers)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}
@@ -78,8 +76,8 @@ func TestDNSProvider_Get_error(t *testing.T) {
 }
 
 func TestDNSProvider_Get_multipleDifferent(t *testing.T) {
-	servers, serverAddresses, err := dnstest.StartMockDNSServerFleet(map[string][]string{"myip.opendns.com.": []string{"1.1.1.1", "1.2.3.4"}})
-	defer dnstest.StopMockDNSServerFleet(servers)
+	servers, serverAddresses, err := startMockDNSServerFleet(map[string][]string{"myip.opendns.com.": []string{"1.1.1.1", "1.2.3.4"}})
+	defer stopMockDNSServerFleet(servers)
 	if err != nil {
 		t.Fatalf("unable to run test server: %v", err)
 	}

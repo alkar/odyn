@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package publicip
+package odyn
 
 import (
 	"errors"
 	"net"
-
-	"github.com/alkar/odyn/dns"
 )
 
 var (
@@ -35,7 +33,7 @@ var (
 // DNSProvider sends queries to a DNS nameserver to discover the public IP
 // address.
 type DNSProvider struct {
-	dns         *dns.Client
+	dns         *DNSClient
 	record      string
 	nameservers []string
 }
@@ -43,7 +41,7 @@ type DNSProvider struct {
 // NewDNSProvider returns an instantiated DNSProvider.
 func NewDNSProvider(record string, nameservers []string) (*DNSProvider, error) {
 	return &DNSProvider{
-		dns:         dns.NewClient(),
+		dns:         NewDNSClient(),
 		record:      record,
 		nameservers: nameservers,
 	}, nil
