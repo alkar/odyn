@@ -49,7 +49,7 @@ type ProviderSetKind int64
 // handling results from multiple sources.
 type ProviderSet struct {
 	kind      ProviderSetKind
-	providers []Provider
+	providers []IPProvider
 }
 
 // NewProviderSet creates a new ProviderSet using the specified Providers.
@@ -61,7 +61,7 @@ type ProviderSet struct {
 //
 // ProviderSetParallel will query all the providers at once and ensure that
 // they return the same result or return an error.
-func NewProviderSet(kind ProviderSetKind, providers ...Provider) (*ProviderSet, error) {
+func NewProviderSet(kind ProviderSetKind, providers ...IPProvider) (*ProviderSet, error) {
 	if kind != ProviderSetSerial && kind != ProviderSetParallel {
 		return nil, ErrProviderSetInvalidKind
 	}
@@ -100,7 +100,7 @@ type providerSetParallelResult struct {
 	Error error
 }
 
-func providerSetParallelRun(wg *sync.WaitGroup, provider Provider, results chan providerSetParallelResult) {
+func providerSetParallelRun(wg *sync.WaitGroup, provider IPProvider, results chan providerSetParallelResult) {
 	defer wg.Done()
 	ip, err := provider.Get()
 	results <- providerSetParallelResult{
