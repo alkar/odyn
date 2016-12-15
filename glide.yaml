@@ -6,4 +6,4 @@ import:
   subpackages:
   - service/route53
 - package: github.com/jawher/mow.cli
-- package: github.com/alkar/simplelog
+- package: github.com/hashicorp/logutils
