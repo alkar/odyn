@@ -39,7 +39,8 @@ var (
 	defaultHTTPProviderClient = &http.Client{}
 
 	defaultHTTPProviderHeaders = map[string]string{
-		"Accept": "plain/text",
+		"Accept":     "plain/text",
+		"User-Agent": "odyn/0",
 	}
 
 	defaultHTTPProviderRequester = func(options *HTTPProviderOptions) ([]byte, error) {

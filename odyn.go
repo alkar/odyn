@@ -56,31 +56,19 @@ package odyn
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
-)
-
-const (
-	// Version of the odyn package.
-	Version = "master"
 )
 
 var (
 	// IpifyProvider uses ipify.org to discover the public IP address.
-	IpifyProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
-		URL: "https://api.ipify.org",
-		Headers: map[string]string{
-			"User-Agent": fmt.Sprintf("odyn/%s", Version),
-		},
-	})
+	IpifyProvider, _ = NewHTTPProvider("https://api.ipify.org")
 
 	// IPInfoProvider uses ipinfo.io to discover the public IP address.
 	IPInfoProvider, _ = NewHTTPProviderWithOptions(&HTTPProviderOptions{
 		URL:   "https://ipinfo.io",
 		Parse: ipInfoParser,
 		Headers: map[string]string{
-			"Accept":     "application/json",
-			"User-Agent": fmt.Sprintf("odyn/%s", Version),
+			"Accept": "application/json",
 		},
 	})
 	ipInfoParser = func(body []byte) (net.IP, error) {
