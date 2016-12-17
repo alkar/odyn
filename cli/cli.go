@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -61,7 +60,7 @@ func validateProvider(name string, providers map[string]interface{}) interface{}
 		available[i] = k
 		i++
 	}
-	fmt.Printf("[ERROR] invalid value '%s': provider must be one of: %s", name, strings.Join(available, ", "))
+	log.Printf("[ERROR] invalid value '%s': provider must be one of: %s", name, strings.Join(available, ", "))
 	os.Exit(1)
 
 	return nil
