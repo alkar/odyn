@@ -25,7 +25,7 @@ pipeline:
     #   - GOOS=darwin  GOARCH=amd64 go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
     #   - GOOS=windows GOARCH=386   go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
     #   - GOOS=windows GOARCH=amd64 go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
-      - gox -output="dist/odyn_{{.OS}}_{{.Arch}}" -osarch="$CROSS_TARGETS" -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+      - gox -output="dist/odyn_{{.OS}}_{{.Arch}}" -osarch="linux/386 linux/arm" -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
       - cp /etc/ssl/certs/ca-certificates.crt .
       - ls -lah dist/
       - ldd dist/*
