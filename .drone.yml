@@ -7,7 +7,7 @@ pipeline:
       - PATH=${GOPATH}/bin:${PATH}
       - VERSION=${DRONE_TAG=master}
     commands:
-      - apk add --no-cache ca-certificates git openssh
+      - apk add --no-cache ca-certificates git openssh base64
       - export IMPORT_PATH=$(glide name)
       - go get github.com/Masterminds/glide
       - glide i
