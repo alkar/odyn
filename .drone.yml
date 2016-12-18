@@ -12,7 +12,6 @@ pipeline:
       - go get github.com/Masterminds/glide
       - glide i
       - export IMPORT_PATH=$(glide name)
-
     #   - go vet $IMPORT_PATH
     #   - go test -v -cover $(glide nv)
     #   - GOOS=linux   GOARCH=386   go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
@@ -33,6 +32,8 @@ pipeline:
 
   github_release:
     files: dist/*
+    checksum:
+      - sha512
     when:
       event: tag
 
