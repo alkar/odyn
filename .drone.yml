@@ -4,11 +4,11 @@ pipeline:
     environment:
       - CGO_ENABLED=0
       - GOPATH=/drone
-      - PATH=${GOPATH}/bin:${PATH}
     commands:
       - apk add --no-cache ca-certificates git openssh base64
       - export VERSION=${DRONE_TAG=master}
       - export IMPORT_PATH=$(glide name)
+      - export PATH=${GOPATH}/bin:${PATH}
       - go get github.com/Masterminds/glide
       - glide i
       - go vet ${IMPORT_PATH}
