@@ -1,0 +1,28 @@
+pipeline:
+  build:
+    image: armhfbuild/golang:1.6-alpine
+    environment:
+      - CGO_ENABLED=0
+      - GOPATH=/drone
+      - PATH=${GOPATH}/bin:${PATH}
+      - VERSION=${DRONE_TAG=master}
+    commands:
+      - export IMPORT_PATH=$(glide name)
+      - go get github.com/Masterminds/glide
+      - glide i
+      - go vet ${IMPORT_PATH}
+      - go test -v -cover $(glide nv)
+      - GOOS=linux   GOARCH=386   go build -o "dist/odyn_${GOOS}_${GOARCH}" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+      - GOOS=linux   GOARCH=amd64 go build -o "dist/odyn_${GOOS}_${GOARCH}" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+      - GOOS=linux   GOARCH=arm   go build -o "dist/odyn_${GOOS}_${GOARCH}" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+      - GOOS=linux   GOARCH=arm64 go build -o "dist/odyn_${GOOS}_${GOARCH}" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+      - GOOS=darwin  GOARCH=386   go build -o "dist/odyn_${GOOS}_${GOARCH}" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+      - GOOS=darwin  GOARCH=amd64 go build -o "dist/odyn_${GOOS}_${GOARCH}" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+      - GOOS=windows GOARCH=386   go build -o "dist/odyn_${GOOS}_${GOARCH}" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+      - GOOS=windows GOARCH=amd64 go build -o "dist/odyn_${GOOS}_${GOARCH}" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+      - cp /etc/ssl/certs/ca-certificates.crt .
+      - ./odyn -version
+
+  slack:
+    when:
+      status: [ failure, success ]
