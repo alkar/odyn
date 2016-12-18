@@ -5,7 +5,7 @@ pipeline:
       - CGO_ENABLED=0
       - GOPATH=/drone
     commands:
-      - apk add --no-cache ca-certificates git openssh base64
+      - apk add --no-cache ca-certificates git openssh
       - export VERSION=${DRONE_TAG=master}
       - export IMPORT_PATH=$(glide name)
       - export PATH=${GOPATH}/bin:${PATH}
