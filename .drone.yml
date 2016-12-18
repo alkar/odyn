@@ -6,21 +6,18 @@ pipeline:
       - GOPATH=/drone
     commands:
       - export VERSION=${DRONE_TAG=master}
-      - apk add --no-cache ca-certificates git
+      - apk add --no-cache ca-certificates git file
       - export PATH=$GOPATH/bin:$PATH
       - go get github.com/mitchellh/gox
       - go get github.com/Masterminds/glide
       - glide i
       - export IMPORT_PATH=$(glide name)
-    #   - go vet $IMPORT_PATH
-    #   - go test -v -cover $(glide nv)
+      - go vet $IMPORT_PATH
+      - go test -v -cover $(glide nv)
       - gox -output="dist/odyn_{{.OS}}_{{.Arch}}" -osarch="linux/386 linux/amd64 linux/arm linux/arm64 darwin/386 darwin/amd64 windows/386 windows/amd64" -ldflags "-s -X main.appVersion=$VERSION -extldflags '-static'" $IMPORT_PATH/cli
       - cp /etc/ssl/certs/ca-certificates.crt .
-      - ls -lah dist/
-      - for i in dist/*; do ldd $i || /bin/true; done
       - apk add --no-cache file
-      - file dist/* || /bin/true
-      - ./dist/odyn_linux_arm --version
+      - file dist/*
 
   github_release:
     files: dist/*
