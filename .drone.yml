@@ -4,25 +4,24 @@ pipeline:
     environment:
       - CGO_ENABLED=0
       - GOPATH=/drone
-      - VERSION=${DRONE_TAG=master}
     commands:
+      - export VERSION=${DRONE_TAG=master}
+      - echo $VERSION
       - apk add --no-cache ca-certificates git openssh
       - export PATH=$GOPATH/bin:$PATH
-      - echo $VERSION
       - go get github.com/Masterminds/glide
-      - export IMPORT_PATH=$(glide name)
-      - echo $IMPORT_PATH
       - glide i
+      - export IMPORT_PATH=$(glide name)
       - go vet $IMPORT_PATH
       - go test -v -cover $(glide nv)
-    #   - GOOS=linux   GOARCH=386   go build -o "dist/odyn_$GOOS_$GOARCH" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
-    #   - GOOS=linux   GOARCH=amd64 go build -o "dist/odyn_$GOOS_$GOARCH" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
-      - GOOS=linux   GOARCH=arm   go build -o "dist/odyn_$GOOS_$GOARCH" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
-    #   - GOOS=linux   GOARCH=arm64 go build -o "dist/odyn_$GOOS_$GOARCH" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
-    #   - GOOS=darwin  GOARCH=386   go build -o "dist/odyn_$GOOS_$GOARCH" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
-    #   - GOOS=darwin  GOARCH=amd64 go build -o "dist/odyn_$GOOS_$GOARCH" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
-    #   - GOOS=windows GOARCH=386   go build -o "dist/odyn_$GOOS_$GOARCH" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
-    #   - GOOS=windows GOARCH=amd64 go build -o "dist/odyn_$GOOS_$GOARCH" -ldflags '-s -X "main.appVersion=${VERSION}" -extldflags "-static"' ${IMPORT_PATH}/cli
+    #   - GOOS=linux   GOARCH=386   go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+    #   - GOOS=linux   GOARCH=amd64 go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+      - GOOS=linux   GOARCH=arm   go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+    #   - GOOS=linux   GOARCH=arm64 go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+    #   - GOOS=darwin  GOARCH=386   go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+    #   - GOOS=darwin  GOARCH=amd64 go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+    #   - GOOS=windows GOARCH=386   go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+    #   - GOOS=windows GOARCH=amd64 go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
       - cp /etc/ssl/certs/ca-certificates.crt .
       - ls -lah dist/
       - ./dist/odyn_linux_arm -version
