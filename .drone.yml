@@ -4,6 +4,7 @@ pipeline:
     environment:
       - CGO_ENABLED=0
       - GOPATH=/drone
+      - CROSS_TARGETS="linux/386 linux/amd64 linux/arm linux/arm64 darwin/386 darwin/amd64 windows/386 windows/amd64"
     commands:
       - export VERSION=${DRONE_TAG=master}
       - apk add --no-cache ca-certificates git
@@ -22,13 +23,13 @@ pipeline:
     #   - GOOS=windows GOARCH=386   go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
     #   - GOOS=windows GOARCH=amd64 go build -o dist/odyn_$GOOS_$GOARCH -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
       - go get github.com/mitchellh/gox
-      - gox -output="dist/odyn_{{.OS}}_{{.Arch}}" -osarch="linux/arm" -ldflags -s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+      - gox -output="dist/odyn_{{.OS}}_{{.Arch}}" -osarch="linux/arm" -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
       - cp /etc/ssl/certs/ca-certificates.crt .
       - ls -lah dist/
       - ./dist/odyn_linux_arm -version
 
 
-#gox -output="dist/odyn_{{.OS}}_{{.Arch}}" -osarch="linux/386 linux/amd64 linux/arm linux/arm64 darwin/386 darwin/amd64 windows/386 windows/amd64" -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
+#gox -output="dist/odyn_{{.OS}}_{{.Arch}}" -osarch="$CROSSTARGET" -ldflags '-s -X "main.appVersion=$VERSION" -extldflags "-static"' $IMPORT_PATH/cli
 
   slack:
     when:
