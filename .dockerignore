@@ -1,2 +1,4 @@
 .git/
 vendor/
+.drone.yml
+.drone.yml.sig
