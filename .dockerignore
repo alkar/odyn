@@ -1,4 +1,5 @@
 .git/
 vendor/
+dist/
 .drone.yml
 .drone.yml.sig
